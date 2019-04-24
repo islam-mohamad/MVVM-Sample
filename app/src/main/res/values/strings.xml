@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">TheD</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+        ut labore et dolore magna aliqua.
+    </string>
+    <string name="no_connection">No Internet Connection</string>
+</resources>

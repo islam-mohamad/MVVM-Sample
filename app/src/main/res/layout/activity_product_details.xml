@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View"/>
+
+        <variable
+                name="product"
+                type="com.sal3awy.thed.home.model.entity.Product"/>
+
+        <variable
+                name="view"
+                type="com.sal3awy.thed.home.view.ui.ProductDetailsActivity"/>
+    </data>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/parentLay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".home.view.ui.ProductDetailsActivity">
+
+        <ImageView
+                android:id="@+id/ivProduct"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@color/colorAccent"
+                android:scaleType="fitXY"
+                app:image="@{product.image.link}"
+                app:layout_constraintDimensionRatio="H,1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+        <ImageView
+                android:id="@+id/ivClose"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:onClick="@{()->view.close()}"
+                android:padding="8dp"
+                android:src="@drawable/ic_close"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+
+        <androidx.legacy.widget.Space
+                android:id="@+id/marginSpacer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginBottom="18dp"
+                app:layout_constraintBottom_toBottomOf="@+id/ivProduct"
+                app:layout_constraintLeft_toLeftOf="@id/ivProduct"
+                app:layout_constraintRight_toRightOf="@id/ivProduct"/>
+
+
+        <LinearLayout
+                android:id="@+id/card"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@drawable/bkg_details"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/marginSpacer">
+
+            <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fillViewport="true">
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:lines="1"
+                            android:text="@{product.name}"
+                            android:textColor="#3d3d3d"
+                            android:textSize="13sp"
+                            android:ellipsize="end"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            tools:text="product Name"/>
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:drawablePadding="8dp"
+                            android:ellipsize="end"
+                            android:gravity="center"
+                            android:maxLength="27"
+                            android:text="@{String.valueOf(product.price)}"
+                            android:textColor="#727272"
+                            android:textSize="12sp"
+                            tools:text="150"/>
+
+
+                    <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="16dp"
+                            android:background="#90a8a8a8"/>
+
+                    <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@{product.productDescription}"
+                            android:textColor="#727272"
+                            tools:text="@string/lorem_ipsum"/>
+
+                </LinearLayout>
+            </ScrollView>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

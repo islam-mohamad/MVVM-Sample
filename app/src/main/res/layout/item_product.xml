@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+
+        <variable name="model"
+                  type="com.sal3awy.thed.home.model.entity.Product"/>
+        <variable name="callback"
+                  type="com.sal3awy.thed.home.view.callback.ProductCallback"/>
+    </data>
+
+    <LinearLayout
+            android:onClick="@{()->callback.productClicked(model)}"
+            android:padding="8dp"
+            app:cardBackgroundColor="@android:color/white"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TextView
+                android:text="@{model.name}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="product name"
+                android:lines="1"
+                android:ellipsize="end"/>
+        <TextView
+                android:layout_marginTop="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{String.valueOf(model.price)}"/>
+        <ImageView
+                android:background="@color/colorPrimaryDark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:image="@{model.image.link}"
+                app:height="@{model.image.height}"
+                app:width="@{model.image.width}"
+                android:scaleType="fitXY"
+                android:contentDescription="@null"/>
+    </LinearLayout>
+
+</layout>
