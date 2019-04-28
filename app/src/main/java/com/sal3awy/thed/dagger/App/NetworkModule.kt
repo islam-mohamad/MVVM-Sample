@@ -45,7 +45,6 @@ class NetworkModule(val context : Context) {
             .connectTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .addInterceptor(NetworkInterceptor(context))
-            .addInterceptor(loggingInterceptor)
             .addInterceptor { chain ->
                 val request: Request
                 val requestBuilder = chain.request().newBuilder()
@@ -54,6 +53,7 @@ class NetworkModule(val context : Context) {
                 request = requestBuilder.build()
                 chain.proceed(request)
             }
+            .addInterceptor(loggingInterceptor)
             .build()
     }
 
