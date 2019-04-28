@@ -15,7 +15,7 @@ class App : Application() {
         super.onCreate()
 
         component = DaggerAppComponent.builder()
-            .networkModule(NetworkModule())
+            .networkModule(NetworkModule(this))
             .build()
 
         scheduleWorkManager()

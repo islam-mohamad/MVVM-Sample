@@ -1,9 +1,11 @@
 package com.sal3awy.thed.dagger.App
 
+import android.content.Context
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import com.sal3awy.thed.networking.NetworkInterceptor
 import com.sal3awy.thed.utils.AppConstants
 import dagger.Module
 import dagger.Provides
@@ -18,7 +20,14 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @Module
-class NetworkModule {
+class NetworkModule(val context : Context) {
+
+    @Provides
+    @AppScope
+    fun context(): Context {
+        return this.context
+    }
+
     @Provides
     @AppScope
     fun loggingInterceptor(): HttpLoggingInterceptor {
@@ -30,11 +39,13 @@ class NetworkModule {
 
     @Provides
     @AppScope
-    fun okHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+    fun okHttpClient(loggingInterceptor: HttpLoggingInterceptor, context: Context): OkHttpClient {
         return OkHttpClient.Builder()
             .readTimeout(60, TimeUnit.SECONDS)
             .connectTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(NetworkInterceptor(context))
+            .addInterceptor(loggingInterceptor)
             .addInterceptor { chain ->
                 val request: Request
                 val requestBuilder = chain.request().newBuilder()
@@ -43,7 +54,6 @@ class NetworkModule {
                 request = requestBuilder.build()
                 chain.proceed(request)
             }
-            .addInterceptor(loggingInterceptor)
             .build()
     }
 

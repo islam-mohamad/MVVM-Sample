@@ -15,13 +15,17 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ProgressBar
 import androidx.annotation.LayoutRes
 import androidx.annotation.Nullable
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import com.google.android.material.snackbar.Snackbar
 import com.sal3awy.thed.R
+import com.sal3awy.thed.networking.NetworkEvent
+import com.sal3awy.thed.networking.NetworkState
 import com.sal3awy.thed.utils.CommonUtils
+import io.reactivex.functions.Consumer
 
 
 abstract class BaseActivity<T : ViewDataBinding> : AppCompatActivity() {
@@ -43,6 +47,65 @@ abstract class BaseActivity<T : ViewDataBinding> : AppCompatActivity() {
         performDataBinding()
         mProgressBar = CommonUtils.showProgressBar(this, viewDataBinding?.root as ViewGroup)
     }
+
+
+    /*
+     * register the BaseActivity as subscriber
+     * and specify what needs to be done in case of
+     * NO_INTERNET, NO_RESPONSE, UNAUTHORIZED error responses
+     */
+    override fun onResume() {
+        super.onResume()
+        NetworkEvent.register(this, Consumer {
+            when (it) {
+                NetworkState.NO_INTERNET -> displayErrorDialog(
+                    getString(R.string.no_internet_title),
+                    getString(R.string.no_internet_desc)
+                )
+
+                NetworkState.NO_RESPONSE -> displayErrorDialog(
+                    getString(R.string.http_error_title),
+                    getString(R.string.http_error_desc)
+                )
+
+                NetworkState.UNAUTHORIZED -> {
+                    //redirect to login screen - if session expired
+                   /* Toast.makeText(applicationContext, R.string.error_login_expired, Toast.LENGTH_LONG).show()
+                    val intent = Intent(this, LgoinActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)*/
+                }
+            }
+        })
+    }
+
+    /*
+   * unregister the activity once it is finished.
+   */
+    override fun onStop() {
+        super.onStop()
+        NetworkEvent.unregister(this)
+    }
+
+    /*
+   * just displaying an error
+   * dialog here! But you configure whatever
+   * you want
+   */
+    fun displayErrorDialog(
+        title: String,
+        desc: String
+    ) {
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(desc)
+            .setCancelable(false)
+            .setPositiveButton(
+                getString(R.string.ok)
+            ) { dialogInterface, i -> dialogInterface.dismiss() }
+            .show()
+    }
+
 
     @TargetApi(Build.VERSION_CODES.M)
     fun hasPermission(permission: String): Boolean {

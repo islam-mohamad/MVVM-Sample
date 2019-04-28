@@ -20,6 +20,9 @@ import com.sal3awy.thed.home.model.entity.Product
 import com.sal3awy.thed.home.view.callback.ProductCallback
 import com.sal3awy.thed.home.viewmodel.ProductViewModel
 import javax.inject.Inject
+import androidx.recyclerview.widget.DividerItemDecoration
+
+
 
 
 class HomeActivity : BaseActivity<ActivityHomeBinding>(), ProductCallback {
@@ -40,10 +43,6 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>(), ProductCallback {
         observeErrorMessage()
         viewModel.getProducts()
         observeViewModel()
-
-        if (!isNetworkAvailable()) {
-            showSnakeBar(getString(R.string.no_connection))
-        }
     }
 
     private fun initInjection() {
@@ -86,6 +85,12 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>(), ProductCallback {
         val recyclerView = viewDataBinding!!.recyclerViewProducts
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = mAdapter
+        recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                this,
+                DividerItemDecoration.VERTICAL
+            )
+        )
     }
 
 
