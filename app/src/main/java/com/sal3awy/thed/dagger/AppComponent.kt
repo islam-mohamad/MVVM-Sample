@@ -25,5 +25,4 @@ interface AppComponent : AndroidInjector<App> {
 
         fun build(): AppComponent
     }
-
 }
