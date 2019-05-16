@@ -4,56 +4,64 @@ import android.annotation.TargetApi
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window.FEATURE_NO_TITLE
-import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.ProgressBar
 import androidx.annotation.LayoutRes
-import androidx.annotation.Nullable
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
+import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.sal3awy.thed.R
 import com.sal3awy.thed.networking.NetworkEvent
 import com.sal3awy.thed.networking.NetworkState
 import com.sal3awy.thed.utils.CommonUtils
+import dagger.android.AndroidInjection
+import dagger.android.DispatchingAndroidInjector
+import dagger.android.support.DaggerAppCompatActivity
+import dagger.android.support.HasSupportFragmentInjector
+import javax.inject.Inject
 import io.reactivex.functions.Consumer
 
 
-abstract class BaseActivity<T : ViewDataBinding> : AppCompatActivity() {
+abstract class BaseActivity<T : ViewDataBinding> : DaggerAppCompatActivity(),
+    BaseFragment.Callback {
+
+    @Inject
+    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Fragment>
+
+    override fun supportFragmentInjector() = dispatchingAndroidInjector
 
     private var mProgressBar: ProgressBar? = null
-    var viewDataBinding: T? = null
-        private set
+    private var mViewDataBinding: T? = null
 
     /**
      * @return layout resource id
      */
-    @get:LayoutRes
-    abstract val layoutId: Int
+    @LayoutRes
+    public abstract fun getLayoutId(): Int
 
+    override fun onFragmentAttached() {
 
-    override fun onCreate(@Nullable savedInstanceState: Bundle?) {
-        //        performDependencyInjection();
-        super.onCreate(savedInstanceState)
-        performDataBinding()
-        mProgressBar = CommonUtils.showProgressBar(this, viewDataBinding?.root as ViewGroup)
+    }
+
+    override fun onFragmentDetached(tag: String) {
+
     }
 
 
-    /*
-     * register the BaseActivity as subscriber
-     * and specify what needs to be done in case of
-     * NO_INTERNET, NO_RESPONSE, UNAUTHORIZED error responses
-     */
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        performDataBinding()
+        mProgressBar = CommonUtils.showProgressBar(this, getViewDataBinding().root as ViewGroup)
+    }
     override fun onResume() {
         super.onResume()
         NetworkEvent.register(this, Consumer {
@@ -70,10 +78,10 @@ abstract class BaseActivity<T : ViewDataBinding> : AppCompatActivity() {
 
                 NetworkState.UNAUTHORIZED -> {
                     //redirect to login screen - if session expired
-                   /* Toast.makeText(applicationContext, R.string.error_login_expired, Toast.LENGTH_LONG).show()
-                    val intent = Intent(this, LgoinActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)*/
+                    /* Toast.makeText(applicationContext, R.string.error_login_expired, Toast.LENGTH_LONG).show()
+                     val intent = Intent(this, LgoinActivity::class.java)
+                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                     startActivity(intent)*/
                 }
             }
         })
@@ -87,11 +95,6 @@ abstract class BaseActivity<T : ViewDataBinding> : AppCompatActivity() {
         NetworkEvent.unregister(this)
     }
 
-    /*
-   * just displaying an error
-   * dialog here! But you configure whatever
-   * you want
-   */
     fun displayErrorDialog(
         title: String,
         desc: String
@@ -106,32 +109,24 @@ abstract class BaseActivity<T : ViewDataBinding> : AppCompatActivity() {
             .show()
     }
 
+    fun getViewDataBinding() = mViewDataBinding!!
 
     @TargetApi(Build.VERSION_CODES.M)
-    fun hasPermission(permission: String): Boolean {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
-    }
+    fun hasPermission(permission: String) = Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+            checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 
     fun hideKeyboard() {
-        val view = this.currentFocus
-        if (view != null) {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
-        }
+        val view: View = this.currentFocus!!
+        val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
-    fun hideLoading() {
-        mProgressBar!!.visibility = View.GONE
-    }
+    fun isNetworkConnected() = CommonUtils.isNetworkAvailable(applicationContext)
 
     fun openActivityOnTokenExpire() {
-        //        startActivity(LoginActivity.newIntent(this));
-        //        finish();
+        /*startActivity(LoginActivity.newIntent(this))
+        finish()*/
     }
-
-    //    public void performDependencyInjection() {
-    //        AndroidInjection.inject(this);
-    //    }
 
     @TargetApi(Build.VERSION_CODES.M)
     fun requestPermissionsSafely(permissions: Array<String>, requestCode: Int) {
@@ -141,32 +136,23 @@ abstract class BaseActivity<T : ViewDataBinding> : AppCompatActivity() {
     }
 
     fun showLoading() {
-        mProgressBar!!.visibility = View.VISIBLE
+        hideLoading()
+    }
+
+    fun hideLoading() {
+        mProgressBar!!.visibility = View.GONE
     }
 
     fun showSnakeBar(message: String) {
-        val snackBar = Snackbar.make(viewDataBinding!!.root, message, Snackbar.LENGTH_LONG)
+        val snackBar = Snackbar.make(getViewDataBinding().root, message, Snackbar.LENGTH_LONG)
         snackBar.setActionTextColor(Color.WHITE)
         val sbView = snackBar.view
         sbView.setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent))
         snackBar.show()
     }
 
-    fun setFullScreen() {
-        requestWindowFeature(FEATURE_NO_TITLE)
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN
-        )
-    }
-
     private fun performDataBinding() {
-        viewDataBinding = DataBindingUtil.setContentView(this, layoutId)
-        viewDataBinding!!.executePendingBindings()
-    }
-
-    fun isNetworkAvailable(): Boolean {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        return connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo.isConnected
+        mViewDataBinding = DataBindingUtil.setContentView(this, getLayoutId())
+        mViewDataBinding!!.executePendingBindings()
     }
 }

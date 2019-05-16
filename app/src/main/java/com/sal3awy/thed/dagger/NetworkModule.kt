@@ -1,10 +1,12 @@
-package com.sal3awy.thed.dagger.App
+package com.sal3awy.thed.dagger
 
 import android.content.Context
+import android.util.Log
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import com.sal3awy.thed.dagger.AppScope
 import com.sal3awy.thed.networking.NetworkInterceptor
 import com.sal3awy.thed.utils.AppConstants
 import dagger.Module
@@ -20,13 +22,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @Module
-class NetworkModule(val context : Context) {
+class NetworkModule {
 
-    @Provides
-    @AppScope
-    fun context(): Context {
-        return this.context
-    }
 
     @Provides
     @AppScope
@@ -39,8 +36,8 @@ class NetworkModule(val context : Context) {
 
     @Provides
     @AppScope
-    fun okHttpClient(loggingInterceptor: HttpLoggingInterceptor, context: Context): OkHttpClient {
-        return OkHttpClient.Builder()
+    fun okHttpClient(loggingInterceptor: HttpLoggingInterceptor, context: Context): OkHttpClient =
+        OkHttpClient.Builder()
             .readTimeout(60, TimeUnit.SECONDS)
             .connectTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
@@ -55,34 +52,32 @@ class NetworkModule(val context : Context) {
             }
             .addInterceptor(loggingInterceptor)
             .build()
-    }
 
 
     @Provides
     @AppScope
-    fun gson(): Gson {
-        return GsonBuilder()
+    fun gson(): Gson =
+        GsonBuilder()
             .setLenient()
             .setDateFormat("yyyy-MM-dd")
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             .create()
-    }
+
 
     @Provides
     @AppScope
-    fun retrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit {
-        return Retrofit.Builder()
+    fun retrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit =
+        Retrofit.Builder()
             .baseUrl(AppConstants.BASE_URL)
             .client(okHttpClient)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
-    }
+
 
     @Provides
     @AppScope
-    internal fun provideExecutor(): Executor {
-        return Executors.newSingleThreadExecutor()
-    }
+    internal fun provideExecutor(): Executor = Executors.newSingleThreadExecutor()
+
 
 }

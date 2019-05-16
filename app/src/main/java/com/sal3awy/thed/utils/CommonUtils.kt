@@ -3,6 +3,7 @@ package com.sal3awy.thed.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.ConnectivityManager
 import android.provider.Settings
 import android.util.Patterns
 import android.view.ViewGroup
@@ -33,5 +34,10 @@ object CommonUtils {
         params.addRule(RelativeLayout.CENTER_IN_PARENT)
         layout.addView(progressBar, params)
         return progressBar
+    }
+
+    fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        return connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo.isConnected
     }
 }
